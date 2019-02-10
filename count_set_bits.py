@@ -4,7 +4,7 @@ def count_bits():
     A = 5
 
     for i in range(A * A):
-        count += int(bin(i).count('1'))
+        count += bin(i).count('1')
 
     print(count)
 
