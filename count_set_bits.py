@@ -1,13 +1,12 @@
-def count_bits():
+def bit_counter():
 
     count = 0
-    A = 5
 
-    for i in range(A * A):
-        count += bin(i).count('1')
+    for i in range(1000000):
+        count += f'{i:b}'.count('1')
 
     print(count)
 
 
 if __name__ == '__main__':
-    count_bits()
+    bit_counter()
