@@ -5,13 +5,12 @@ def maskify(cc):
 
     cc = cc.replace('-', '').replace(' ', '').upper()
 
-    # make an exception for input with <= 6 characters
+    # make an exception if <= 6 characters
 
     if len(cc) <= 6:
         print(cc)
+
     print(cc)
-    # else:
-    #     print((len(cc) - 4) * "#" + cc[1:-4])
 
 
 if __name__ == '__main__':
