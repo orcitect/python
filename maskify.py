@@ -1,22 +1,20 @@
+import re
+
+
 def maskify(cc):
 
-    # replace spaces & dashes
-    # ensure uppercase for consistency
+    regex = re.compile(r'[0-9]+')
 
-    cc = cc.replace('-', '').replace(' ', '').upper()
+    cc = cc.replace('-', '').replace(' ', '')
 
-    # make an exception if <= 6 characters
-
-    if len(cc) <= 6:
+    if len(cc) <= 5:
         print(cc)
-
-    print(cc)
+    else:
+        sub = ''.join([(re.sub(regex, '#', c)) for c in list(cc[1:-4])])
+        new_cc = cc[0] + sub + cc[-4:]
+        print(new_cc)
 
 
 if __name__ == '__main__':
-    maskify('999999')
-    maskify('1111-2222-3333-4444')
-    maskify('1111222233334444')
-    maskify('1111 2222 3333 4444')
-    maskify('ABCD-EFGH-IJKL-MNOP')
-    maskify('1A2B2D3E4F5G6H7k')
+    maskify('123456')
+    maskify('A12B2D3E4F586H7K')
