@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 def bit_counter(num):
 
     count = 0

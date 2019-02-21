@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """ dump (mysql)db, transfer and md5 verify on remote server """
 
 from email.mime.text import MIMEText
@@ -7,8 +9,9 @@ import sys
 import gzip
 import traceback
 import smtplib
-import subprocess as sp
-import paramiko as pa
+import subprocess
+import paramiko
+
 
 class Messages:
     dout = ""
@@ -31,29 +34,31 @@ class Messages:
     sstart = ""
     send = ""
 
+
 def dumpdb(folder, filename):
     """ test """
     try:
-        print "Dumping database to file %s" % filename
+        print("Dumping database to file %s" % filename)
         fout = open(folder+filename, 'w')
         ret = sp.call(("mysqldump", "--all-databases", "--single-transaction", "--quick"), stdout=fout)
         fout.close()
         if ret == 0:
-            print "Dumped database successfully"
+            print("Dumped database successfully")
             Messages.dout += "Successfully dumped database to %s\n" % (folder+filename)
             Messages.dsuc = True
             return True
         else:
-            print "Failed to dump database, errorcode = %d" %ret
-            Messages.derr += "Failed to dump database, errorcode = %d\n" %ret
+            print("Failed to dump database, errorcode = %d" % ret)
+            Messages.derr += "Failed to dump database, errorcode = %d\n" % ret
             return False
         return ret
-    except:
+    except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lst = traceback.format_list(traceback.extract_tb(exc_traceback))
         for _s in lst:
             Messages.derr += _s
         return False
+
 
 def pack(folder, filename):
     """ ziploc """
@@ -82,11 +87,12 @@ def pack(folder, filename):
         os.remove(folder+filename+".gz")
         return False
 
+
 def send_and_check(local_dir, filename, user, server, remote_dir, ssh_key):
     try:
         print "Logging into backup at: %s" % server
         client = pa.SSHClient()
-        client.load_system_host_keys()  #"/root/.ssh/known_hosts"
+        client.load_system_host_keys()
         client.connect(hostname=server, username=user, key_filename=ssh_key)
         sftp = client.open_sftp()
         print "Verifying dump file on: %s" % server
@@ -134,14 +140,15 @@ def send_and_check(local_dir, filename, user, server, remote_dir, ssh_key):
             Messages.serr += s
         return False
 
+
 def remote_execute(dir, filename, param, server, user, ssh_key):
     try:
-        print "Executing %s on %s"  %("["+dir+filename+" "+param+"]",
+        print "Executing %s on %s" % ("["+dir+filename+" "+param+"]",
                                       "["+server+"]")
         Messages.rout += "Executing %s on %s\n" %("["+dir+filename+" "+param+"]",
                                                   "["+server+"]")
-        client = pa.SSHClient()
-        client.load_system_host_keys()  #"/root/.ssh/known_hosts"
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
         client.connect(hostname=server, username=user, key_filename=ssh_key)
         rin, rout, rerr = client.exec_command(dir+filename+" "+param)
         print "Output from execution:"
@@ -162,7 +169,7 @@ def remote_execute(dir, filename, param, server, user, ssh_key):
         else:
             Messages.rout += "Faled to execute %s on %s\n" % ("["+dir+filename+" "+param+"]",
                                                               "["+server+"]")
-            print "Got an error while executing:\n%s" %err
+            print "Got an error while executing:\n%s" % err
             Messages.rerr += "%s\n" % err
             return False
     except StandardError:
@@ -173,6 +180,7 @@ def remote_execute(dir, filename, param, server, user, ssh_key):
         for s in lst:
             Messages.rerr += s
         return False
+
 
 def disc_free(user, server, ssh_key):
     """ enough disk? """
@@ -197,13 +205,14 @@ def disc_free(user, server, ssh_key):
             Messages.dferr += _s
         return False
 
+
 def send_mail(sender, receiver):
     """ send mail! """
     subject = ""
     if Messages.ssuc and Messages.psuc and Messages.dsuc:
         subject = "Database backup chain SUCCESS %s" % time.ctime()
     else:
-        subject = "Database backup chain FAILED %s" %time.ctime()
+        subject = "Database backup chain FAILED %s" % time.ctime()
 
     message = ""
     if Messages.dsuc:
@@ -247,6 +256,7 @@ def send_mail(sender, receiver):
     _s.sendmail(sender, receiver, msg.as_string())
     _s.quit()
 
+
 def run_verification():
     """ run verification! """
 
@@ -261,6 +271,7 @@ def run_verification():
         print "Database verification output:\n%s" % lout
         print "Database verification encountered an error:\n%s" % lerr
         return False
+
 
 if __name__ == "__main__":
     _t = time.localtime()

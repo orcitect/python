@@ -25,14 +25,14 @@ dbs = ['domain1_app', 'domain1_blog']
 
 # Script Configuration
 today = datetime.date.today()
-previous = today - timedelta(days = 7)
+previous = today - timedelta(days=7)
 
 # File Backups
 for d in dirs:
 
     file = d.split('/')[::-1][0]
 
-    print '[FILE] Creating archive for ' + file
+    print('[FILE] Creating archive for ' + file)
 
     tar = tarfile.open(os.path.join('/tmp/', file + '-' + str(today) + '.files.tar.gz'), 'w:gz')
     tar.add(d)
@@ -44,7 +44,7 @@ for d in dbs:
     d = d.strip()
     file = "/tmp/%s-%s.sql" % (d, today)
 
-    print '[DB] Creating archive for ' + file
+    print('[DB] Creating archive for ' + file)
 
     os.popen("mysqldump -u %s -p%s -h %s -e -c --hex-blob --triggers --routines --single-transaction %s | gzip -c > %s.gz" % (mysql_username, mysql_password, mysql_hostname, d, file))
 
