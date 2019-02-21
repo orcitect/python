@@ -1,6 +1,6 @@
 import re
 
-regex = re.compile(r'\d+')
+regex = re.compile(r'[0-9]+')
 
 
 def maskify(cc):
