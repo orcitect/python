@@ -17,6 +17,6 @@ def maskify(cc):
 
 
 if __name__ == '__main__':
-    #maskify('123456')
-    for _ in range(10000000):
-        maskify('A12B2D3E4F586H7K')
+    maskify('43210')
+    maskify('123456')
+    maskify('A12B2D3E4F586H7K')
