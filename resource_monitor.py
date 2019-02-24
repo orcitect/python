@@ -24,7 +24,7 @@ def diskfree():
         x[2] = free disk on mountpoint /
         x[3] = percentage used on mountpoint /
     """
-    tmp = sp.Popen(["diskfree", "/"], stdout=sp.PIPE)
+    tmp = subprocess.Popen(["diskfree", "/"], stdout=subprocess.PIPE)
     tmp.wait()
     out = tmp.communicate()
     cnt = 0
@@ -58,7 +58,7 @@ def freespace():
         x[6] = current amount of used swap in KB
         x[7] = current amount of free swap in KB
     """
-    tmp = sp.Popen(["freespace"], stdout=sp.PIPE)
+    tmp = subprocess.Popen(["freespace"], stdout=subprocess.PIPE)
     tmp.wait()
     out = tmp.communicate()
     stats = [[0]*7 for _x in range(4)]
@@ -145,10 +145,10 @@ def sendmail():
         msg = MIMEText(message)
         msg['Subject'] = subject
         msg['From'] = "me@inter.net"
-        msg['To'] = "you"
+        msg['To'] = "you@inter.net"
         _s = smtplib.SMTP(local_hostname="localhost")
         _s.connect()
-        _s.sendmail("oscar.petersen@netent.com", ["oscar.petersen@netent.com"], msg.as_string())
+        _s.sendmail("me@inter.net", ["you@inter.net"], msg.as_string())
         _s.quit()
 
 
@@ -160,29 +160,29 @@ if __name__ == "__main__":
     print("Percentage used is: %2.5f %s" % (Data.disk_percent, "%"))
 
     m_tot, m_used, m_free, c_used, c_free, s_tot, s_used, s_free = freespace()
-    print "Memory total is:     %d KB" % Data.mem_total
-    print "Memory used  is:     %d KB" % Data.mem_used
-    print "Memory free  is:     %d KB" % Data.mem_free
+    print("Memory total is: %d KB" % Data.mem_total)
+    print("Memory used  is: %d KB" % Data.mem_used)
+    print("Memory free  is: %d KB" % Data.mem_free)
 
-    print "Disk Cache used is:  %d KB" % Data.cache_used
-    print "Disk Cache free is:  %d KB" % Data.cache_free
+    print("Disk Cache used is: %d KB" % Data.cache_used)
+    print("Disk Cache free is: %d KB" % Data.cache_free)
 
-    print "Swap total is:       %d KB" % Data.swap_total
-    print "Swap used  is:       %d KB" % Data.swap_used
-    print "Swap free  is:       %d KB" % Data.swap_free
+    print("Swap total is: %d KB" % Data.swap_total)
+    print("Swap used is: %d KB" % Data.swap_used)
+    print("Swap free is: %d KB" % Data.swap_free)
 
     if Data.disk_critical:
-        print "sending critically low diskspace message %d > %d" % (Data.disk_percent, Data.crit_disk_free)
+        print("sending critically low diskspace message %d > %d" % (Data.disk_percent, Data.crit_disk_free))
     elif Data.disk_warning:
-        print "sending warning low diskspace message %d > %d" % (Data.disk_percent, Data.warn_disk_free)
+        print("sending warning low diskspace message %d > %d" % (Data.disk_percent, Data.warn_disk_free))
 
     if Data.cache_critical:
-        print "sending criticaly low filecache message %d < %d" % (Data.cache_free, Data.crit_filecache)
+        print("sending criticaly low filecache message %d < %d" % (Data.cache_free, Data.crit_filecache))
     elif Data.cache_warning:
-        print "sending warning low filecache message %d < %d" % (Data.cache_free, Data.warn_filecache)
+        print("sending warning low filecache message %d < %d" % (Data.cache_free, Data.warn_filecache))
 
     if Data.swap_critical:
-        print "sending critically low swap message %d < %d" % (Data.swap_free, Data.crit_swap)
+        print("sending critically low swap message %d < %d" % (Data.swap_free, Data.crit_swap))
     elif Data.swap_warning:
-        print "sending warning low swap message %d < %d" % (Data.swap_free, Data.warn_swap)
+        print("sending warning low swap message %d < %d" % (Data.swap_free, Data.warn_swap))
     sendmail()
