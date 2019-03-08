@@ -11,6 +11,8 @@ def maskify(cc):
 
     if len(cc) <= 5:
         return cc
+    if len(cc) == 6:
+        return cc
     else:
         new_cc = cc[0] + regex.sub('#', cc[1:-4]) + cc[-4:]
         return new_cc
