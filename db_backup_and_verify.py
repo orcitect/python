@@ -9,7 +9,7 @@ import sys
 import gzip
 import traceback
 import smtplib
-import subprocess
+import subprocess as sp
 import paramiko
 
 
@@ -63,25 +63,25 @@ def dumpdb(folder, filename):
 def pack(folder, filename):
     """ ziploc """
     try:
-        print "Compressing %s" % (folder+filename)
+        print("Compressing %s") % (folder+filename)
         fin = open(folder+filename, 'r')
         gzout = gzip.open(folder+filename+".gz", 'wb')
         for line in fin:
             gzout.write(line)
         gzout.close()
         fin.close()
-        print "Successfully compressed %s" % (folder+filename+".gz")
+        print("Successfully compressed %s") % (folder+filename+".gz")
         Messages.pout += "Successfully compressed %s\n" % (folder+filename+".gz")
-        print "Removing %s" % (folder+filename)
+        print("Removing %s") % (folder+filename)
         os.remove(folder+filename)
         Messages.psuc = True
         return True
-    except StandardError:
+    except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lst = traceback.format_list(traceback.extract_tb(exc_traceback))
         for _s in lst:
             Messages.perr += _s
-        print "Failed to compress %s. \nRemoving files" % (folder+filename)
+        print("Failed to compress %s. \nRemoving files") % (folder+filename)
         Messages.perr += "\nFailed to compress %s. \nRemoving files\n" % (folder+filename)
         os.remove(folder+filename)
         os.remove(folder+filename+".gz")
@@ -90,49 +90,49 @@ def pack(folder, filename):
 
 def send_and_check(local_dir, filename, user, server, remote_dir, ssh_key):
     try:
-        print "Logging into backup at: %s" % server
-        client = pa.SSHClient()
+        print("Logging into backup at: %s") % server
+        client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(hostname=server, username=user, key_filename=ssh_key)
         sftp = client.open_sftp()
-        print "Verifying dump file on: %s" % server
+        print("Verifying dump file on: %s") % server
         r_stat = sftp.lstat(remote_dir+filename)
         l_stat = os.stat(local_dir+filename)
-        print "Computing md5sum for remote dumpfile"
+        print("Computing md5sum for remote dumpfile")
         rout, rerr = client.exec_command(("md5sum %s" % (remote_dir+filename)))
-        print "Computing md5sum for local dumpfile"
+        print("Computing md5sum for local dumpfile")
         tmp = sp.Popen(["md5sum", local_dir+filename], stdout=sp.PIPE)
         tmp.wait()
         lout, lerr = tmp.communicate()
         rmd5 = rout.read().split(" ", 1)
         lmd5 = lout.split(" ", 1)
         if r_stat.st_size == l_stat.st_size and rmd5 == lmd5:
-            print "Both stats report the same size and md5sum"
+            print("Both stats report the same size and md5sum")
             Messages.sout += "Successfully sent %s to %s\n" % (filename, server)
-            print "Remote size = %d" % r_stat.st_size
+            print("Remote size = %d") % r_stat.st_size
             Messages.sout += "Remote size = %d\n" % r_stat.st_size
-            print "Local  size = %d" % l_stat.st_size
+            print("Local size = %d") % l_stat.st_size
             Messages.sout += "Local  size = %d\n" % l_stat.st_size
-            print "Remote MD5  = %s" % rmd5
+            print("Remote MD5 = %s") % rmd5
             Messages.sout += "Remote MD5  = %s\n" % rmd5
-            print "Local  MD5  = %s" % lmd5
-            Messages.sout += "Local  MD5  = %s\n" % lmd5
+            print("Local MD5 = %s") % lmd5
+            Messages.sout += "Local MD5 = %s\n" % lmd5
             Messages.ssuc = True
             return True
         else:
-            print "The two stats report different sizes or the md5sums differ"
+            print("The two stats report different sizes or the md5sums differ")
             Messages.sout += "Failed to send %s to %s\n" % (filename, server)
-            print "Remote size = %d" % r_stat.st_size
+            print("Remote size = %d") % r_stat.st_size
             Messages.sout += "Remote size = %d\n" % r_stat.st_size
-            print "Local  size = %d" % l_stat.st_size
-            Messages.sout += "Local  size = %d\n" % l_stat.st_size
-            print "Remote MD5  = %s"  % rmd5
-            Messages.sout += "Remote MD5  = %s\n" % rmd5
-            print "Local  MD5  = %s"  % lmd5
-            Messages.sout += "Local  MD5  = %s\n" % lmd5
+            print("Local size = %d") % l_stat.st_size
+            Messages.sout += "Local size = %d\n" % l_stat.st_size
+            print("Remote MD5 = %s") % rmd5
+            Messages.sout += "Remote MD5 = %s\n" % rmd5
+            print("Local MD5 = %s") % lmd5
+            Messages.sout += "Local MD5 = %s\n" % lmd5
             return False
-    except StandardError:
-        print "Exception raised while sending %s to %s" % (filename, server)
+    except Exception:
+        print("Exception raised while sending %s to %s") % (filename, server)
         Messages.serr += "Exception raised while sending %s to %s\n" % (filename, server)
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lst = traceback.format_list(traceback.extract_tb(exc_traceback))
@@ -143,37 +143,32 @@ def send_and_check(local_dir, filename, user, server, remote_dir, ssh_key):
 
 def remote_execute(dir, filename, param, server, user, ssh_key):
     try:
-        print "Executing %s on %s" % ("["+dir+filename+" "+param+"]",
-                                      "["+server+"]")
-        Messages.rout += "Executing %s on %s\n" %("["+dir+filename+" "+param+"]",
-                                                  "["+server+"]")
+        print("Executing %s on %s") % ("["+dir+filename+" "+param+"]", "["+server+"]")
+        Messages.rout += "Executing %s on %s\n" % ("["+dir+filename+" "+param+"]", "["+server+"]")
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(hostname=server, username=user, key_filename=ssh_key)
         rin, rout, rerr = client.exec_command(dir+filename+" "+param)
-        print "Output from execution:"
+        print("Output from execution:")
         Messages.rout += "Output from execution:\n"
         out = rout.readline()
         while out:
-            print out,
+            print(out)
             Messages.rout += out
             out = rout.readline()
         err = rerr.read()
         if not err:
-            print "Succsessfully executed %s on %s"  %("["+dir+filename+" "+param+"]",
-                                                       "["+server+"]")
-            Messages.rout += "Succsessfully executed %s on %s\n" % ("["+dir+filename+" "+param+"]",
-                                                                    "["+server+"]")
+            print("Succsessfully executed %s on %s") % ("["+dir+filename+" "+param+"]", "["+server+"]")
+            Messages.rout += "Succsessfully executed %s on %s\n" % ("["+dir+filename+" "+param+"]", "["+server+"]")
             Messages.rsuc = True
             return True
         else:
-            Messages.rout += "Faled to execute %s on %s\n" % ("["+dir+filename+" "+param+"]",
-                                                              "["+server+"]")
-            print "Got an error while executing:\n%s" % err
+            Messages.rout += "Faled to execute %s on %s\n" % ("["+dir+filename+" "+param+"]", "["+server+"]")
+            print("Got an error while executing:\n%s") % err
             Messages.rerr += "%s\n" % err
             return False
-    except StandardError:
-        print "Script case local error"
+    except Exception:
+        print("Script case local error")
         Messages.rout += "Exception raised while executing %s on %s\n" % (filename, server)
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lst = traceback.format_list(traceback.extract_tb(exc_traceback))
@@ -186,19 +181,20 @@ def disc_free(user, server, ssh_key):
     """ enough disk? """
     try:
         Messages.dfout += "Disc free on %s after backup:\n" % server
-        client = pa.SSHClient()
-        client.load_system_host_keys()  #"/root/.ssh/known_hosts"
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
         client.connect(hostname=server, username=user, key_filename=ssh_key)
-        rin, rout, rerr = client.exec_command("df -h")
+        cmd = "df -h"
+        rin, rout, rerr = client.exec_command(cmd)
         Messages.dfout += rout.read()
         Messages.dferr += rerr.read()
-        print Messages.dfout
-        print Messages.dferr
+        print(Messages.dfout)
+        print(Messages.dferr)
         Messages.dfsuc = True
         return True
-    except StandardError:
-        print "[df -h] caused local error"
-        Messages.dfout += "Exception raised while executing [df -h] on %s\n" % (server)
+    except Exception:
+        print(cmd + "caused local error")
+        Messages.dfout += "Exception raised while executing" + cmd + "on %s\n" % (server)
         exc_type, exc_value, exc_traceback = sys.exc_info()
         lst = traceback.format_list(traceback.extract_tb(exc_traceback))
         for _s in lst:
@@ -216,36 +212,36 @@ def send_mail(sender, receiver):
 
     message = ""
     if Messages.dsuc:
-        message += "DUMP SUCCESS:\n%s"              % Messages.dout
-        message += "Start time = %s\n"              % Messages.dstart
-        message += "End time   = %s\n"              % Messages.dend
+        message += "DUMP SUCCESS:\n%s" % Messages.dout
+        message += "Start time = %s\n" % Messages.dstart
+        message += "End time = %s\n" % Messages.dend
     else:
-        message += "DUMP FAILED:\n%s"               % Messages.dout
-        message += "DUMP ERRORS:\n%s"               % Messages.derr
-        message += "Start time = %s\n"              % Messages.dstart
-        message += "End time   = %s\n"              % Messages.dend
+        message += "DUMP FAILED:\n%s" % Messages.dout
+        message += "DUMP ERRORS:\n%s" % Messages.derr
+        message += "Start time = %s\n" % Messages.dstart
+        message += "End time = %s\n" % Messages.dend
     message += "\n\n"
-    #if Messages.pstart and Messages.pend:
+    # if Messages.pstart and Messages.pend:
     if Messages.psuc:
-        message += "PACKAGING SUCCESS:\n%s"         % Messages.pout
-        message += "Start time = %s\n"              % Messages.pstart
-        message += "End time   = %s\n"              % Messages.pend
+        message += "PACKAGING SUCCESS:\n%s" % Messages.pout
+        message += "Start time = %s\n" % Messages.pstart
+        message += "End time = %s\n" % Messages.pend
     else:
-        message += "PACKAGING FAILED:\n%s"          % Messages.pout
-        message += "PACKAGING ERRORS:\n%s"          % Messages.perr
-        message += "Start time = %s\n"              % Messages.pstart
-        message += "End time   = %s\n"              % Messages.pend
+        message += "PACKAGING FAILED:\n%s" % Messages.pout
+        message += "PACKAGING ERRORS:\n%s" % Messages.perr
+        message += "Start time = %s\n" % Messages.pstart
+        message += "End time = %s\n" % Messages.pend
     message += "\n\n"
-    #if Messages.sstart and Messages.send:
+    # if Messages.sstart and Messages.send:
     if Messages.ssuc:
-        message += "SEND SUCCESS:\n%s"              % Messages.sout
-        message += "Start time = %s\n"              % Messages.sstart
-        message += "End time   = %s\n"              % Messages.send
+        message += "SEND SUCCESS:\n%s" % Messages.sout
+        message += "Start time = %s\n" % Messages.sstart
+        message += "End time = %s\n" % Messages.send
     else:
-        message += "SEND FAILED:\n%s"               % Messages.sout
-        message += "SEND ERRORS:\n%s"               % Messages.serr
-        message += "Start time = %s\n"              % Messages.sstart
-        message += "End time   = %s\n"              % Messages.send
+        message += "SEND FAILED:\n%s" % Messages.sout
+        message += "SEND ERRORS:\n%s" % Messages.serr
+        message += "Start time = %s\n" % Messages.sstart
+        message += "End time = %s\n" % Messages.send
     message += "\n\n"
     msg = MIMEText(message)
     msg['Subject'] = subject
@@ -260,16 +256,16 @@ def send_mail(sender, receiver):
 def run_verification():
     """ run verification! """
 
-    print "Running database verification script"
+    print("Running database verification script")
     tmp = sp.Popen(["php", "/data/backup/verify_database_backup.php"], stdout=sp.PIPE)
     tmp.wait()
     lout, lerr = tmp.communicate()
     if not lerr:
-        print "Database verification output:\n%s" % lout
+        print("Database verification output:\n%s") % lout
         return True
     else:
-        print "Database verification output:\n%s" % lout
-        print "Database verification encountered an error:\n%s" % lerr
+        print("Database verification output:\n%s") % lout
+        print("Database verification encountered an error:\n%s") % lerr
         return False
 
 
