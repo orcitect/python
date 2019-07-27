@@ -67,7 +67,14 @@ def main():
         os.rename(fout.name, mask_filter)
         os.chmod(mask_filter, 0o644)
 
-        subprocess.call(['maxctrl', 'call', 'command', 'masking', 'reload', 'masking'])
+        subprocess.call([
+            'maxctrl',
+            'call',
+            'command',
+            'masking',
+            'reload',
+            'masking'
+        ])
         log.info('Masking filter updated!')
 
         # update firewall

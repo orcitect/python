@@ -16,10 +16,5 @@ with open(sys.argv[1], 'rb', buffering=0) as filename:
             break
         sha1hash = hashlib.sha1(DATA)
         sha1hashed = sha1hash.hexdigest()
-        #HASH.update(DATA)
-        #HASH(DATA)
-
-#print 'sha1sum:', "{0}".format(HASH.hexdigest()))
-#print 'Same:', (DATA == DATA2)
 
 print(sha1hashed)

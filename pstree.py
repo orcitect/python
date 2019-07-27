@@ -7,7 +7,6 @@ import psutil
 
 
 def print_tree(parent, tree, indent=''):
-    """ """
     try:
         name = psutil.Process(parent).name()
     except psutil.Error:
@@ -25,9 +24,8 @@ def print_tree(parent, tree, indent=''):
 
 
 def main():
-    """ lol """
-    # construct a dict where 'values' are all the processes
-    # having 'key' as their parent
+    ''' construct a dict where values are all the
+    processes having key as their parent'''
     tree = collections.defaultdict(list)
     for p in psutil.process_iter():
         try:

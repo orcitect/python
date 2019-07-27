@@ -10,7 +10,7 @@ import time
 def test_str_as_int(_s):
     """ hi """
     try:
-        _x = int(_s)
+        _ = int(_s)
         return True
     except ValueError:
         return False
