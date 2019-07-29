@@ -67,8 +67,8 @@ def main():
 
     # compare results
 
-    sql_diff = list(set(ldap) - set(sql))
-    ldap_diff = list(set(sql) - set(ldap))
+    sql_diff = [set(ldap) - set(sql)]
+    ldap_diff = [set(sql) - set(ldap)]
 
     # no diff: exit
 
